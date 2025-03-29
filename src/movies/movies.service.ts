@@ -31,23 +31,24 @@ export class MoviesService {
     }
 
 
-    async findAllPaginate(options: IPaginationOptions, filterOptions: FilterOptions): Promise<Pagination<MoviePageItemResponseDto>> {
-
+    async findAll(options: IPaginationOptions, filterOptions: FilterOptions): Promise<Pagination<MoviePageItemResponseDto>> {
         let queryBuilder = this.moviesRepository
             .createQueryBuilder('mov')
             .orderBy('mov.releaseDate', 'DESC')
-
-        if(filterOptions.property.toLowerCase() === 'genre') {
-            return await  this.findAllGenrePaginate(options, filterOptions.value);
-        }
-        else if(filterOptions.property.toLowerCase() === 'releasedate' || filterOptions.property.toLowerCase() === 'year') {
-            const releaseEndDate = `${filterOptions.value}-12-31`;
-            const releaseStartDate = `${filterOptions.value}-01-01`;
-            console.debug(`Year: ${filterOptions.value} Release Start Date: ${releaseStartDate} Release End Date: ${releaseEndDate}`)
-            queryBuilder = queryBuilder.where(
-                'mov.releaseDate >= :releaseStartDate AND mov.releaseDate <= :releaseEndDate'
-                , { releaseStartDate, releaseEndDate }
-            );
+        switch (filterOptions.property.toLowerCase()) {
+            case 'genre':
+                return await  this.findAllGenre(options, filterOptions.value.toLowerCase());
+            case 'year':
+                const releaseEndDate = `${filterOptions.value}-12-31`;
+                const releaseStartDate = `${filterOptions.value}-01-01`;
+                console.debug(`Year: ${filterOptions.value} Release Start Date: ${releaseStartDate} Release End Date: ${releaseEndDate}`)
+                queryBuilder = queryBuilder.where(
+                    'mov.releaseDate >= :releaseStartDate AND mov.releaseDate <= :releaseEndDate'
+                    , { releaseStartDate, releaseEndDate }
+                );
+                break;
+            default:
+                break;
         }
         const paginatedMovieEntities = await paginate<MovieEntity>(queryBuilder, options);
         return this.transformDto(paginatedMovieEntities);
@@ -77,8 +78,7 @@ export class MoviesService {
         return `This action removes a #${id} movie`;
     }
 
-    private async findAllGenrePaginate(options: IPaginationOptions, genre: string):  Promise<Pagination<MoviePageItemResponseDto>> {
-
+    private async findAllGenre(options: IPaginationOptions, genre: string):  Promise<Pagination<MoviePageItemResponseDto>> {
         const genreRegEx = `%${genre}%`
         const rawMovieEntitiesCount: number = await this.moviesRepository.manager.query(
             'SELECT count(*) as totalItems FROM movies, json_each(genres) WHERE  lower(trim(json_extract(json_each.value, \'$.name\'))) LIKE ?'

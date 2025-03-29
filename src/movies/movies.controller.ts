@@ -32,7 +32,7 @@ export class MoviesController {
       @Query('filter', new DefaultValuePipe(''), ParseFilterPipe) filterOptions:FilterOptions
   ) {
     // console.log(JSON.stringify(filterOptions));
-    return this.moviesService.findAllPaginate({
+    return this.moviesService.findAll({
       page,
       limit,
       route: 'http://localhost:3000/movies',

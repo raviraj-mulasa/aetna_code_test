@@ -2,6 +2,10 @@
 
 Your task is to create an API on top of a couple different databases.  It should conform to the user stories provided below.  You are free to use whatever language you prefer, however our tech stack features NodeJS, Java and Ruby. If you're comfortable with any of these, try to favor them.  Google and the interwebs are at your disposal.
 
+## Implementation Overview
+
+![image](docs/images/implementation.svg)
+
 ## User Stories
 
 #### List All Movies
